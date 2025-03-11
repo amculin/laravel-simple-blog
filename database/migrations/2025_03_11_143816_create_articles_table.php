@@ -17,9 +17,9 @@ return new class extends Migration
             $table->string('title', 255);
             $table->string('slug', 255);
             $table->text('content');
-            $table->unsignedTinyInteger('status')->comment('1 = Published; 2 = Scheduled; 3 = Draft;')
+            $table->unsignedTinyInteger('status')->comment('1 = Active; 2 = Scheduled; 3 = Draft;')
                 ->default(1);
-            $table->timestamp('publish_at')->useCurrent();
+            $table->timestamp('publish_at')->useCurrent()->nullable();
             $table->timestamp('created_at')->useCurrent();
             $table->timestamp('updated_at')->useCurrentOnUpdate()->nullable();
 
