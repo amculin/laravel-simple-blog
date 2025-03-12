@@ -4,9 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Articles extends Model
 {
+    const IS_ACTIVE = 1;
+    const IS_SCHEDULED = 2;
+    const IS_DRAFT = 3;
+
     /**
      * The table associated with the model.
      *
@@ -21,6 +26,9 @@ class Articles extends Model
      */
     protected $primaryKey = 'id';
 
+    protected $fillable = ['title', 'slug', 'content', 'author_id', 'status', 'publish_at'];
+
+    public $createdDate;
     public $statusStyle;
     public $statusName;
 
@@ -30,9 +38,23 @@ class Articles extends Model
     protected static function booted(): void
     {
         static::retrieved(function (Articles $articles) {
+            $articles->setCreatedDate($articles->created_at);
             $articles->setStatusStyle($articles->getStatusStyles()[$articles->status]);
             $articles->setStatusName($articles->getStatusNames()[$articles->status]);
         });
+    }
+
+    /**
+     * Get the author that owns the article.
+     */
+    public function author(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function setCreatedDate(string $date): void
+    {
+        $this->createdDate = substr($date, 0, 10);
     }
 
     public function setStatusStyle(string $statusStyle): void
