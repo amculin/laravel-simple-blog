@@ -19,7 +19,7 @@ class HomeController extends Controller
         if (Auth::check()) {
             $data['articles'] = Articles::where('author_id', '=', Auth::id())
                 ->orderBy('created_at', 'DESC')
-                ->get();
+                ->simplePaginate(5);
         }
 
         return view('home', $data);

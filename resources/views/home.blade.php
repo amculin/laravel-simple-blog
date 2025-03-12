@@ -22,19 +22,24 @@
                         <div class="mt-4 flex items-end justify-between">
                             <div>
                                 <div>Published: {{ $post->publish_at }}</div>
-                                <div>Updated: {{ $post->updated_at }}</div>
+                                <div>Updated: {{ $post->updated_at ?: $post->created_at }}</div>
                             </div>
                             <div>
-                                <a href="#" class="text-blue-500">Detail</a> /
-                                <a href="#" class="text-blue-500">Edit</a> /
-                                <form action="#" method="POST" class="inline">
-                                    <button class="text-red-500">Delete</button>
+                                <a href="{{ route('posts.show', $post) }}" class="text-blue-500">Detail</a> /
+                                <a href="{{ route('posts.edit', $post) }}" class="text-blue-500">Edit</a> /
+                                <form action="{{ route('posts.delete', $post) }}" method="POST" class="inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button class="text-red-500" type="submit"
+                                        onClick="return confirm('Are you sure you want to delete this article?')">
+                                        Delete
+                                    </button>
                                 </form>
                             </div>
                         </div>
                     </div>
                     @endforeach
-                    <div>Pagination Here</div>
+                    <div>{{ $articles->links() }}</div>
                 </div>
             </div>
             @else
