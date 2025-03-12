@@ -8,6 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Articles extends Model
 {
+    const IS_ACTIVE = 1;
+    const IS_SCHEDULED = 2;
+    const IS_DRAFT = 3;
+
     /**
      * The table associated with the model.
      *
@@ -21,6 +25,8 @@ class Articles extends Model
      * @var string
      */
     protected $primaryKey = 'id';
+
+    protected $fillable = ['title', 'slug', 'content', 'author_id', 'status', 'publish_at'];
 
     public $createdDate;
     public $statusStyle;
