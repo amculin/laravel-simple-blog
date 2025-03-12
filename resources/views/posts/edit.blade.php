@@ -15,7 +15,10 @@
                             <div>
                                 <x-input-label for="title" :value="__('Title')" />
                                 <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" value="{{ $post->title }}" />
-                                <x-input-error :messages="''" class="mt-2" />
+                                
+                                @error('title')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div>
@@ -24,7 +27,10 @@
                                     focus:ring-indigo-500 rounded-md shadow-sm" rows="6">
                                     {{ $post->content }}
                                 </textarea>
-                                <x-input-error :messages="''" class="mt-2" />
+
+                                @error('content')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div>

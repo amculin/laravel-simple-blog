@@ -15,7 +15,10 @@
                             <div>
                                 <x-input-label for="title" :value="__('Title')" />
                                 <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" />
-                                <x-input-error :messages="''" class="mt-2" />
+                                
+                                @error('title')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div>
@@ -27,7 +30,10 @@
                             <div>
                                 <x-input-label for="published_at" :value="__('Publish Date')" />
                                 <x-text-input id="published_at" name="published_at" type="date" class="mt-1 block w-full" />
-                                <x-input-error :messages="''" class="mt-2" />
+
+                                @error('content')
+                                    <div class="alert alert-danger">{{ $message }}</div>
+                                @enderror
                             </div>
 
                             <div>
