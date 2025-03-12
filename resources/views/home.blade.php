@@ -17,7 +17,7 @@
                     <div class="rounded-md border p-5 shadow">
                         <div class="flex items-center gap-2">
                             <span class="flex-none rounded bg-{{ $post->statusStyle }}-100 px-2 py-1 text-{{ $post->statusStyle }}-800">{{ $post->statusName }}</span>
-                            <h3><a href="#" class="text-blue-500">{{ $post->title }}</a></h3>
+                            <h3><a href="{{ route('posts.show', $post) }}" class="text-blue-500">{{ $post->title }}</a></h3>
                         </div>
                         <div class="mt-4 flex items-end justify-between">
                             <div>

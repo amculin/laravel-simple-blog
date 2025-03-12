@@ -26,6 +26,11 @@ class PostController extends Controller
         return view('posts.index', $data);
     }
 
+    public function show(Articles $post)
+    {
+        return view('posts.show', compact('post'));
+    }
+
     public function create()
     {
         return view('posts.create');
