@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
 
-class Articles extends Model
+class Article extends Model
 {
     /** @use HasFactory<\Database\Factories\ArticleFactory> */
     use HasFactory, Notifiable;
@@ -31,7 +31,7 @@ class Articles extends Model
      */
     protected $primaryKey = 'id';
 
-    protected $fillable = ['title', 'slug', 'content', 'author_id', 'status', 'publish_at'];
+    protected $fillable = ['title', 'content', 'author_id', 'status', 'publish_at'];
 
     public $createdDate;
     public $statusStyle;
@@ -42,7 +42,7 @@ class Articles extends Model
      */
     protected static function booted(): void
     {
-        static::retrieved(function (Articles $articles) {
+        static::retrieved(function (Article $articles) {
             $articles->setCreatedDate($articles->created_at);
             $articles->setStatusStyle($articles->getStatusStyles()[$articles->status]);
             $articles->setStatusName($articles->getStatusNames()[$articles->status]);
@@ -52,7 +52,7 @@ class Articles extends Model
     /**
      * Get the author that owns the article.
      */
-    public function author(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
