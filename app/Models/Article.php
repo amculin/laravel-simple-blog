@@ -34,7 +34,6 @@ class Article extends Model
     protected $fillable = ['title', 'content', 'author_id', 'status', 'publish_at'];
 
     public $createdDate;
-    public $statusStyle;
     public $statusName;
 
     /**
@@ -44,7 +43,6 @@ class Article extends Model
     {
         static::retrieved(function (Article $articles) {
             $articles->setCreatedDate($articles->created_at);
-            $articles->setStatusStyle($articles->getStatusStyles()[$articles->status]);
             $articles->setStatusName($articles->getStatusNames()[$articles->status]);
         });
     }
@@ -62,11 +60,6 @@ class Article extends Model
         $this->createdDate = substr($date, 0, 10);
     }
 
-    public function setStatusStyle(string $statusStyle): void
-    {
-        $this->statusStyle = $statusStyle;
-    }
-
     public function setStatusName(string $statusName): void
     {
         $this->statusName = $statusName;
@@ -78,15 +71,6 @@ class Article extends Model
             1 => 'Active',
             2 => 'Scheduled',
             3 => 'Draft'
-        ];
-    }
-
-    public function getStatusStyles(): array
-    {
-        return [
-            1 => 'green',
-            2 => 'gray',
-            3 => 'yellow'
         ];
     }
 }
