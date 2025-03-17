@@ -5,7 +5,8 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
-use App\Models\Articles;
+use App\Models\Article;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
@@ -17,18 +18,20 @@ class PostController extends Controller
      */
     public function index(): View
     {
-        $data['articles'] = Articles::with('author:id,name')
+        $data['articles'] = Article::with('author:id,name')
             ->select('id', 'author_id', 'title', 'status', 'created_at')
-            ->where('status', '=', Articles::IS_ACTIVE)
+            ->where('status', '=', Article::IS_ACTIVE)
             ->orderBy('created_at', 'DESC')
             ->simplePaginate(5);
 
         return view('posts.index', $data);
     }
 
-    public function show(Articles $post)
+    public function show(int $id): View
     {
-        return view('posts.show', compact('post'));
+        return view('posts.show', [
+            'post' => Article::findOrFail($id)
+        ]);
     }
 
     public function create()
@@ -38,7 +41,7 @@ class PostController extends Controller
 
     public function store(StorePostRequest $request)
     {
-        Articles::create([
+        Article::create([
             'title' => $request->title,
             'slug' => Str::slug($request->title),
             'content' => $request->content,
@@ -50,7 +53,7 @@ class PostController extends Controller
         return redirect()->route('home')->with('success', 'Post created successfully!');
     }
 
-    public function edit(Articles $post)
+    public function edit(Article $post)
     {
         if (Auth::check() && (auth()->user()->id === $post->author_id)) {
             return view('posts.edit', compact('post'));
@@ -59,7 +62,7 @@ class PostController extends Controller
         }
     }
 
-    public function update(UpdatePostRequest $request, Articles $post)
+    public function update(UpdatePostRequest $request, Article $post)
     {
         if (Auth::check() && (auth()->user()->id === $post->author_id)) {
             $post->status = $request->convertStatus();
@@ -73,7 +76,7 @@ class PostController extends Controller
         }
     }
 
-    public function destroy(Articles $post)
+    public function destroy(Article $post)
     {
         if (Auth::check() && (auth()->user()->id === $post->author_id)) {
             $post->delete();

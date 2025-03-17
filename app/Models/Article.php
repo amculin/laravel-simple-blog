@@ -48,6 +48,18 @@ class Article extends Model
     }
 
     /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'created_at' => 'datetime:Y-m-d',
+        ];
+    }
+
+    /**
      * Get the author that owns the article.
      */
     public function user(): BelongsTo
