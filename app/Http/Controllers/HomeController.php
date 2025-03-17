@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\Articles;
+use App\Models\Article;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -14,14 +14,14 @@ class HomeController extends Controller
      */
     public function index(): View
     {
-        $data = [];
+        $articles = null;
 
         if (Auth::check()) {
-            $data['articles'] = Articles::where('author_id', '=', Auth::id())
-                ->orderBy('created_at', 'DESC')
+            $articles = Article::where('user_id', Auth::id())
+                ->latest('created_at')
                 ->simplePaginate(5);
         }
 
-        return view('home', $data);
+        return view('home', ['articles' => $articles]);
     }
 }
