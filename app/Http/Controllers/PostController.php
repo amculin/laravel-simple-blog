@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Models\Article;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -27,30 +27,35 @@ class PostController extends Controller
         return view('posts.index', ['articles' => $articles]);
     }
 
-    public function show(int $id): View
+    public function show(string $id): View
     {
         return view('posts.show', [
             'post' => Article::findOrFail($id)
         ]);
     }
 
-    public function create()
+    public function store(Request $request): RedirectResponse
     {
-        return view('posts.create');
-    }
-
-    public function store(StorePostRequest $request)
-    {
-        Article::create([
-            'title' => $request->title,
-            'slug' => Str::slug($request->title),
-            'content' => $request->content,
-            'publish_at' => $request->published_at ? $request->published_at : date('Y-m-d H:i:s'),
-            'status' => $request->convertStatus(),
-            'author_id' => auth()->id()
+        $request->validate([
+            'title' => 'required|string|max:60',
+            'content' => 'required|string',
         ]);
 
-        return redirect()->route('home')->with('success', 'Post created successfully!');
+        $model = Article::create([
+            'title' => $request->title,
+            'content' => $request->content,
+            'publish_at' => $request->published_at,
+            'status' => $request->is_draft,
+            'user_id' => auth()->user()->id
+        ]);
+
+        if (is_null($request->published_at)) {
+            $model->update([
+                'publish_at' => $model->created_at
+            ]);
+        }
+
+        return redirect()->route('home');
     }
 
     public function edit(Article $post)

@@ -31,7 +31,7 @@ class Article extends Model
      */
     protected $primaryKey = 'id';
 
-    protected $fillable = ['title', 'content', 'author_id', 'status', 'publish_at'];
+    protected $fillable = ['title', 'content', 'user_id', 'status', 'publish_at'];
 
     public $createdDate;
     public $statusName;
@@ -46,17 +46,25 @@ class Article extends Model
             $articles->setStatusName($articles->getStatusNames()[$articles->status]);
         });
     }
-
+    
     /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
+     * Interact with the article's status.
      */
-    protected function casts(): array
+    protected function status(): Attribute
     {
-        return [
-            'created_at' => 'datetime:Y-m-d',
-        ];
+        return Attribute::make(
+            set: function (int|null $value) {
+                if ($value == 1) {
+                    return $this::IS_DRAFT;
+                } else {
+                    if ($this->publish_at) {
+                        return $this::IS_SCHEDULED;
+                    } else {
+                        return $this::IS_ACTIVE;
+                    }
+                }
+            }
+        );
     }
 
     /**
