@@ -18,13 +18,13 @@ class PostController extends Controller
      */
     public function index(): View
     {
-        $data['articles'] = Article::with('author:id,name')
-            ->select('id', 'author_id', 'title', 'status', 'created_at')
-            ->where('status', '=', Article::IS_ACTIVE)
-            ->orderBy('created_at', 'DESC')
+        $articles = Article::with('user:id,name')
+            ->select('id', 'user_id', 'title', 'status', 'created_at')
+            ->where('status', Article::IS_ACTIVE)
+            ->latest('created_at')
             ->simplePaginate(5);
 
-        return view('posts.index', $data);
+        return view('posts.index', ['articles' => $articles]);
     }
 
     public function show(int $id): View
