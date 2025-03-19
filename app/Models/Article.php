@@ -31,9 +31,10 @@ class Article extends Model
      */
     protected $primaryKey = 'id';
 
-    protected $fillable = ['title', 'content', 'author_id', 'status', 'publish_at'];
+    protected $fillable = ['title', 'content', 'user_id', 'status', 'publish_at'];
 
     public $createdDate;
+    public $publishedDate;
     public $statusName;
 
     /**
@@ -43,8 +44,29 @@ class Article extends Model
     {
         static::retrieved(function (Article $articles) {
             $articles->setCreatedDate($articles->created_at);
+            $articles->setPublishedDate($articles->publish_at);
             $articles->setStatusName($articles->getStatusNames()[$articles->status]);
         });
+    }
+    
+    /**
+     * Interact with the article's status.
+     */
+    protected function status(): Attribute
+    {
+        return Attribute::make(
+            set: function (int|null $value) {
+                if ($value == 1) {
+                    return $this::IS_DRAFT;
+                } else {
+                    if ($this->publish_at) {
+                        return $this::IS_SCHEDULED;
+                    } else {
+                        return $this::IS_ACTIVE;
+                    }
+                }
+            }
+        );
     }
 
     /**
@@ -58,6 +80,11 @@ class Article extends Model
     public function setCreatedDate(string $date): void
     {
         $this->createdDate = substr($date, 0, 10);
+    }
+
+    public function setPublishedDate(string|null $date): void
+    {
+        $this->publishedDate = is_null($date) ? null : substr($date, 0, 10);
     }
 
     public function setStatusName(string $statusName): void

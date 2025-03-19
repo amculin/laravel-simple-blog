@@ -3,12 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
-use App\Models\Articles;
+use App\Models\Article;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PostController extends Controller
 {
@@ -17,69 +19,84 @@ class PostController extends Controller
      */
     public function index(): View
     {
-        $data['articles'] = Articles::with('author:id,name')
-            ->select('id', 'author_id', 'title', 'status', 'created_at')
-            ->where('status', '=', Articles::IS_ACTIVE)
-            ->orderBy('created_at', 'DESC')
+        $articles = Article::with('user:id,name')
+            ->select('id', 'user_id', 'title', 'status', 'created_at')
+            ->where('status', Article::IS_ACTIVE)
+            ->latest('created_at')
             ->simplePaginate(5);
 
-        return view('posts.index', $data);
+        return view('posts.index', ['articles' => $articles]);
     }
 
-    public function show(Articles $post)
+    public function show(string $id): View
     {
-        return view('posts.show', compact('post'));
+        return view('posts.show', [
+            'post' => Article::findOrFail($id)
+        ]);
     }
 
-    public function create()
+    public function store(Request $request): RedirectResponse
     {
-        return view('posts.create');
-    }
-
-    public function store(StorePostRequest $request)
-    {
-        Articles::create([
-            'title' => $request->title,
-            'slug' => Str::slug($request->title),
-            'content' => $request->content,
-            'publish_at' => $request->published_at ? $request->published_at : date('Y-m-d H:i:s'),
-            'status' => $request->convertStatus(),
-            'author_id' => auth()->id()
+        $request->validate([
+            'title' => 'required|string|max:60',
+            'content' => 'required|string',
         ]);
 
-        return redirect()->route('home')->with('success', 'Post created successfully!');
-    }
+        $model = Article::create([
+            'title' => $request->title,
+            'content' => $request->content,
+            'publish_at' => $request->published_at,
+            'status' => $request->is_draft,
+            'user_id' => auth()->user()->id
+        ]);
 
-    public function edit(Articles $post)
-    {
-        if (Auth::check() && (auth()->user()->id === $post->author_id)) {
-            return view('posts.edit', compact('post'));
-        } else {
-            abort(403, 'Unauthorized access.');
+        if (is_null($request->published_at)) {
+            $model->update([
+                'publish_at' => $model->created_at
+            ]);
         }
+
+        return redirect()->route('home');
     }
 
-    public function update(UpdatePostRequest $request, Articles $post)
+    public function authorOnly(int $userId): bool
     {
-        if (Auth::check() && (auth()->user()->id === $post->author_id)) {
-            $post->status = $request->convertStatus();
-            $post->publish_at = $request->published_at ? $request->published_at : date('Y-m-d H:i:s');
+        return Auth::check() && (auth()->user()->id === $userId);
+    }
+
+    public function edit(string $id): View|HttpException
+    {
+        $post = Article::findOrFail($id);
+
+        abort_if(!$this->authorOnly($post->user_id), 403);
+        
+        return view('posts.edit', ['post' => $post]);
+    }
+
+    public function update(UpdatePostRequest $request, string $id): RedirectResponse|HttpException
+    {
+        $post = Article::findOrFail($id);
+
+        abort_if(!$this->authorOnly($post->user_id), 403);
+        
+        $post->fill($request->validated());
+
+        $post->publish_at = $request->published_at;
+        $post->status = $request->is_draft;
+
+        $post->save();
     
-            $post->update($request->validated());
-    
-            return redirect()->route('home')->with('success', 'Post updated successfully!');
-        } else {
-            abort(403, 'Unauthorized access.');
-        }
+        return redirect()->route('home');
     }
 
-    public function destroy(Articles $post)
+    public function destroy(string $id): RedirectResponse|HttpException
     {
-        if (Auth::check() && (auth()->user()->id === $post->author_id)) {
-            $post->delete();
-            return redirect()->route('home')->with('success', 'Post deleted successfully!');
-        } else {
-            abort(403, 'Unauthorized access.');
-        }
+        $post = Article::findOrFail($id);
+
+        abort_if(!$this->authorOnly($post->user_id), 403);
+
+        $post->delete();
+        
+        return redirect()->route('home');
     }
 }
