@@ -21,7 +21,9 @@ class ViewAPostTest extends TestCase
         $article = Article::factory()->create([
             'user_id' => $user->id,
             'title' => $title,
-            'content' => $content
+            'content' => $content,
+            'status' => 0,
+            'publish_at' => null
         ]);
 
         $response = $this->get('/posts/' . $article->id);
@@ -48,5 +50,19 @@ class ViewAPostTest extends TestCase
         $response = $this->get('/posts/10000');
 
         $response->assertNotFound();
+    }
+
+    public function test_detail_post_return_403_when_article_is_scheduled_or_is_draft(): void
+    {
+        $user = User::factory()->create();
+
+        $article = Article::factory()->create([
+            'user_id' => $user->id,
+            'status' => 1
+        ]);
+
+        $response = $this->get('/posts/' . $article->id);
+
+        $response->assertForbidden();
     }
 }
