@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class PostController extends Controller
 {
@@ -58,27 +59,34 @@ class PostController extends Controller
         return redirect()->route('home');
     }
 
-    public function edit(Article $post)
+    public function authorOnly(int $userId): bool
     {
-        if (Auth::check() && (auth()->user()->id === $post->author_id)) {
-            return view('posts.edit', compact('post'));
-        } else {
-            abort(403, 'Unauthorized access.');
-        }
+        return Auth::check() && (auth()->user()->id === $userId);
     }
 
-    public function update(UpdatePostRequest $request, Article $post)
+    public function edit(string $id): View|HttpException
     {
-        if (Auth::check() && (auth()->user()->id === $post->author_id)) {
-            $post->status = $request->convertStatus();
-            $post->publish_at = $request->published_at ? $request->published_at : date('Y-m-d H:i:s');
+        $post = Article::findOrFail($id);
+
+        abort_if(!$this->authorOnly($post->user_id), 403);
+        
+        return view('posts.edit', ['post' => $post]);
+    }
+
+    public function update(UpdatePostRequest $request, string $id): RedirectResponse|HttpException
+    {
+        $post = Article::findOrFail($id);
+
+        abort_if(!$this->authorOnly($post->user_id), 403);
+        
+        $post->fill($request->validated());
+
+        $post->publish_at = $request->published_at;
+        $post->status = $request->is_draft;
+
+        $post->save();
     
-            $post->update($request->validated());
-    
-            return redirect()->route('home')->with('success', 'Post updated successfully!');
-        } else {
-            abort(403, 'Unauthorized access.');
-        }
+        return redirect()->route('home');
     }
 
     public function destroy(Article $post)

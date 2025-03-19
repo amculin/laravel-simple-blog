@@ -12,12 +12,13 @@
                     <section>
                         <form method="post" action="{{ route('posts.update', $post) }}" class="space-y-6">
                             @csrf
+                            @method('put')
                             <div>
                                 <x-input-label for="title" :value="__('Title')" />
-                                <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" value="{{ $post->title }}" />
+                                <x-text-input id="title" name="title" type="text" class="mt-1 block w-full" :value="old('title', $post->title)" />
                                 
                                 @error('title')
-                                    <div class="alert alert-danger">{{ $message }}</div>
+                                <x-input-error :messages="$message" class="mt-2" />
                                 @enderror
                             </div>
 
@@ -25,27 +26,29 @@
                                 <x-input-label for="content" :value="__('Content')" />
                                 <textarea id="content" name="content" class="mt-1 block w-full border-gray-300 focus:border-indigo-500
                                     focus:ring-indigo-500 rounded-md shadow-sm" rows="6">
-                                    {{ $post->content }}
+                                    {{ old('content', $post->content) }}
                                 </textarea>
 
                                 @error('content')
-                                    <div class="alert alert-danger">{{ $message }}</div>
+                                <x-input-error :messages="$message" class="mt-2" />
                                 @enderror
                             </div>
 
                             <div>
                                 <x-input-label for="published_at" :value="__('Publish Date')" />
-                                <x-text-input id="published_at" name="published_at" type="date" class="mt-1 block w-full" value="{{ $post->publish_at }}" />
-                                <x-input-error :messages="''" class="mt-2" />
+                                <x-text-input id="published_at" name="published_at" type="date" class="mt-1 block w-full" :value="old('publishedDate', $post->publishedDate)" />
+                                @error('published_at')
+                                <x-input-error :messages="$message" class="mt-2" />
+                                @enderror
                             </div>
 
                             <div>
                                 <label for="is_draft" class="inline-flex items-center">
                                     <?php
-                                    $checked = $post->status == 3 ? 'checked="checked"' : '';
+                                    $isDraft = old('status', $post->status) == 3;
                                     ?>
                                     <input id="is_draft" type="checkbox" value="1" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500"
-                                        name="is_draft" {{ $checked }} />
+                                        name="is_draft" @checked($isDraft) />
                                     <span class="ms-2 text-sm text-gray-600">{{ __('Save as Draft') }}</span>
                                 </label>
                             </div>

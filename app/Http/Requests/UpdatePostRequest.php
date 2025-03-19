@@ -28,17 +28,4 @@ class UpdatePostRequest extends FormRequest
             'content' => 'required|string',
         ];
     }
-
-    public function convertStatus(): int
-    {
-        if ($this->published_at) {
-            return Articles::IS_SCHEDULED;
-        }
-
-        if ($this->is_draft == 1) {
-            return Articles::IS_DRAFT;
-        }
-
-        return Articles::IS_ACTIVE;
-    }
 }

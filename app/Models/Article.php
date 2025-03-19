@@ -34,6 +34,7 @@ class Article extends Model
     protected $fillable = ['title', 'content', 'user_id', 'status', 'publish_at'];
 
     public $createdDate;
+    public $publishedDate;
     public $statusName;
 
     /**
@@ -43,6 +44,7 @@ class Article extends Model
     {
         static::retrieved(function (Article $articles) {
             $articles->setCreatedDate($articles->created_at);
+            $articles->setPublishedDate($articles->publish_at);
             $articles->setStatusName($articles->getStatusNames()[$articles->status]);
         });
     }
@@ -78,6 +80,11 @@ class Article extends Model
     public function setCreatedDate(string $date): void
     {
         $this->createdDate = substr($date, 0, 10);
+    }
+
+    public function setPublishedDate(string|null $date): void
+    {
+        $this->publishedDate = is_null($date) ? null : substr($date, 0, 10);
     }
 
     public function setStatusName(string $statusName): void
