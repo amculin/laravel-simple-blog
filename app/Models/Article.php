@@ -70,6 +70,14 @@ class Article extends Model
     }
 
     /**
+     * To check post status whether it's active or not
+     */
+    public function isActive(): bool
+    {
+        return $this->status == $this::IS_ACTIVE;
+    }
+
+    /**
      * Get the author that owns the article.
      */
     public function user(): BelongsTo
