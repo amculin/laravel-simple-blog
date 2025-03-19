@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Notifications\Notifiable;
 
-class Articles extends Model
+class Article extends Model
 {
     /** @use HasFactory<\Database\Factories\ArticleFactory> */
     use HasFactory, Notifiable;
@@ -31,10 +31,10 @@ class Articles extends Model
      */
     protected $primaryKey = 'id';
 
-    protected $fillable = ['title', 'slug', 'content', 'author_id', 'status', 'publish_at'];
+    protected $fillable = ['title', 'content', 'user_id', 'status', 'publish_at'];
 
     public $createdDate;
-    public $statusStyle;
+    public $publishedDate;
     public $statusName;
 
     /**
@@ -42,17 +42,37 @@ class Articles extends Model
      */
     protected static function booted(): void
     {
-        static::retrieved(function (Articles $articles) {
+        static::retrieved(function (Article $articles) {
             $articles->setCreatedDate($articles->created_at);
-            $articles->setStatusStyle($articles->getStatusStyles()[$articles->status]);
+            $articles->setPublishedDate($articles->publish_at);
             $articles->setStatusName($articles->getStatusNames()[$articles->status]);
         });
+    }
+    
+    /**
+     * Interact with the article's status.
+     */
+    protected function status(): Attribute
+    {
+        return Attribute::make(
+            set: function (int|null $value) {
+                if ($value == 1) {
+                    return $this::IS_DRAFT;
+                } else {
+                    if ($this->publish_at) {
+                        return $this::IS_SCHEDULED;
+                    } else {
+                        return $this::IS_ACTIVE;
+                    }
+                }
+            }
+        );
     }
 
     /**
      * Get the author that owns the article.
      */
-    public function author(): BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -62,9 +82,9 @@ class Articles extends Model
         $this->createdDate = substr($date, 0, 10);
     }
 
-    public function setStatusStyle(string $statusStyle): void
+    public function setPublishedDate(string|null $date): void
     {
-        $this->statusStyle = $statusStyle;
+        $this->publishedDate = is_null($date) ? null : substr($date, 0, 10);
     }
 
     public function setStatusName(string $statusName): void
@@ -78,15 +98,6 @@ class Articles extends Model
             1 => 'Active',
             2 => 'Scheduled',
             3 => 'Draft'
-        ];
-    }
-
-    public function getStatusStyles(): array
-    {
-        return [
-            1 => 'green',
-            2 => 'gray',
-            3 => 'yellow'
         ];
     }
 }

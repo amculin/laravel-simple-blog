@@ -16,13 +16,37 @@
                     @foreach ($articles as $post)
                     <div class="rounded-md border p-5 shadow">
                         <div class="flex items-center gap-2">
-                            <span class="flex-none rounded bg-{{ $post->statusStyle }}-100 px-2 py-1 text-{{ $post->statusStyle }}-800">{{ $post->statusName }}</span>
+                            @php
+                            $isActive = $post->status == $post::IS_ACTIVE;
+                            $isScheduled = $post->status == $post::IS_SCHEDULED;
+                            $isDraft = $post->status == $post::IS_DRAFT;
+
+                            if ($isActive) {
+                                $background = 'bg-green-100';
+                                $color = 'text-green-800';
+                            } else if ($isScheduled) {
+                                $background = 'bg-gray-100';
+                                $color = 'text-gray-800';
+                            } else {
+                                $background = 'bg-yellow-100';
+                                $color = 'text-yellow-800';
+                            }
+                            @endphp
+                            <span @class([
+                                'flex-none',
+                                'rounded',
+                                $background,
+                                'px-2',
+                                'py-1',
+                                $color
+
+                            ])>{{ $post->statusName }}</span>
                             <h3><a href="{{ route('posts.show', $post) }}" class="text-blue-500">{{ $post->title }}</a></h3>
                         </div>
                         <div class="mt-4 flex items-end justify-between">
                             <div>
                                 <div>Published: {{ $post->publish_at }}</div>
-                                <div>Updated: {{ $post->updated_at ?: $post->created_at }}</div>
+                                <div>Updated: {{ $post->updated_at }}</div>
                             </div>
                             <div>
                                 <a href="{{ route('posts.show', $post) }}" class="text-blue-500">Detail</a> /
@@ -42,8 +66,9 @@
                     <div>{{ $articles->links() }}</div>
                 </div>
             </div>
-            @else
+            @endauth
 
+            @guest
             {{-- for guest users --}}
             <div class="overflow-hidden bg-white shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900">
@@ -51,7 +76,7 @@
                     <a href="{{ route('register') }}" class="text-blue-500">register</a>.</p>
                 </div>
             </div>
-            @endauth
+            @endguest
         </div>
     </div>
 </x-app-layout>

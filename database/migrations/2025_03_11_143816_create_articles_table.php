@@ -13,18 +13,16 @@ return new class extends Migration
     {
         Schema::create('articles', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('author_id');
+            $table->unsignedBigInteger('user_id');
             $table->string('title', 255);
-            $table->string('slug', 255);
             $table->text('content');
             $table->unsignedTinyInteger('status')->comment('1 = Active; 2 = Scheduled; 3 = Draft;')
                 ->default(1);
             $table->timestamp('publish_at')->useCurrent()->nullable();
-            $table->timestamp('created_at')->useCurrent();
-            $table->timestamp('updated_at')->useCurrentOnUpdate()->nullable();
+            $table->timestamps();
 
-            $table->index('author_id');
-            $table->foreign('author_id')->references('id')->on('users')
+            $table->index('user_id');
+            $table->foreign('user_id')->references('id')->on('users')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
         });
