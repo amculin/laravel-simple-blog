@@ -89,13 +89,14 @@ class PostController extends Controller
         return redirect()->route('home');
     }
 
-    public function destroy(Article $post)
+    public function destroy(string $id): RedirectResponse|HttpException
     {
-        if (Auth::check() && (auth()->user()->id === $post->author_id)) {
-            $post->delete();
-            return redirect()->route('home')->with('success', 'Post deleted successfully!');
-        } else {
-            abort(403, 'Unauthorized access.');
-        }
+        $post = Article::findOrFail($id);
+
+        abort_if(!$this->authorOnly($post->user_id), 403);
+
+        $post->delete();
+        
+        return redirect()->route('home');
     }
 }
