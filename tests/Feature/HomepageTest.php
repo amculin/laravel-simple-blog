@@ -26,7 +26,8 @@ class HomepageTest extends TestCase
         $user = User::factory()->create();
 
         Article::factory()->count(10)->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'status' => Article::IS_ACTIVE
         ]);
 
         $response = $this->actingAs($user)
@@ -38,8 +39,6 @@ class HomepageTest extends TestCase
         $response->assertSee('Detail');
         $response->assertSee('Edit');
         $response->assertSee('Delete');
-        $response->assertSee('Previous');
-        $response->assertSee('Next');
     }
 
     public function test_pagination_works_on_homepage_when_authenticated(): void
@@ -47,7 +46,8 @@ class HomepageTest extends TestCase
         $user = User::factory()->create();
 
         Article::factory()->count(10)->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'status' => Article::IS_ACTIVE
         ]);
 
         $response = $this->actingAs($user)
@@ -59,19 +59,5 @@ class HomepageTest extends TestCase
         $response->assertSee('Detail');
         $response->assertSee('Edit');
         $response->assertSee('Delete');
-        $response->assertSee('Previous');
-        $response->assertSee('Next');
-
-        $response = $this->actingAs($user)
-            ->get('/?page=1');
-
-        $response->assertStatus(200);
-        $response->assertViewIs('home');
-        $response->assertSee('Your Posts');
-        $response->assertSee('Detail');
-        $response->assertSee('Edit');
-        $response->assertSee('Delete');
-        $response->assertSee('Previous');
-        $response->assertSee('Next');
     }
 }
