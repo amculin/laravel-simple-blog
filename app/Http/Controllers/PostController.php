@@ -30,6 +30,10 @@ class PostController extends Controller
 
     public function show(string $id): View
     {
+        $post = Article::findOrFail($id);
+
+        abort_if(!$post->isActive(), 403);
+
         return view('posts.show', [
             'post' => Article::findOrFail($id)
         ]);
