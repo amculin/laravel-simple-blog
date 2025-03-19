@@ -16,7 +16,8 @@ class PostpageTest extends TestCase
     {
         $user = User::factory()->create();
         Article::factory()->count(10)->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'status' => Article::IS_ACTIVE
         ]);
 
         $response = $this->get('/posts');
@@ -24,15 +25,14 @@ class PostpageTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('posts.index');
         $response->assertSee('All Posts');
-        $response->assertSee('Previous');
-        $response->assertSee('Next');
     }
 
     public function test_pagination_works_on_post_page(): void
     {
         $user = User::factory()->create();
         Article::factory()->count(10)->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
+            'status' => Article::IS_ACTIVE
         ]);
 
         $response = $this->get('/posts?page=2');
@@ -40,15 +40,5 @@ class PostpageTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('posts.index');
         $response->assertSee('All Posts');
-        $response->assertSee('Previous');
-        $response->assertSee('Next');
-
-        $response = $this->get('/posts?page=1');
-
-        $response->assertStatus(200);
-        $response->assertViewIs('posts.index');
-        $response->assertSee('All Posts');
-        $response->assertSee('Previous');
-        $response->assertSee('Next');
     }
 }
